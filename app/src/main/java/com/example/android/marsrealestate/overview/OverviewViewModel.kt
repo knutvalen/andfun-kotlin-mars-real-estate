@@ -20,11 +20,14 @@ package com.example.android.marsrealestate.overview
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.android.marsrealestate.network.MarsApi
 import com.example.android.marsrealestate.network.MarsProperty
+import kotlinx.coroutines.launch
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
+import java.lang.Exception
 
 /**
  * The [ViewModel] that is attached to the [OverviewFragment].
@@ -53,17 +56,14 @@ class OverviewViewModel : ViewModel() {
      * Mars properties retrieved.
      */
     private fun getMarsRealEstateProperties() {
-        // TODO (05) Call viewModelScope.launch and place the rest of the code in it
-        // TODO (06) Call MarsApi.retrofitService.getProperties()
-        // TODO (07) Surround the Retrofit code with a try/catch, and set _response.value appropriately
-        MarsApi.retrofitService.getProperties().enqueue( object: Callback<List<MarsProperty>> {
-            override fun onFailure(call: Call<List<MarsProperty>>, t: Throwable) {
-                _response.value = "Failure: " + t.message
+        viewModelScope.launch {
+            try {
+                val result = MarsApi.retrofitService.getProperties()
+                _response.value = "Success: ${result.size} Mars properties retrieved"
+            } catch (e: Exception) {
+                _response.value = "Failure: " + e.message
             }
-            override fun onResponse(call: Call<List<MarsProperty>>, response: Response<List<MarsProperty>>) {
-                _response.value = "Success: ${response.body()?.size} Mars properties retrieved"
-            }
-        })
+        }
     }
 
     // TODO (08) Cancel the Coroutine Job when the ViewModel is finished in onCleared
